@@ -52,7 +52,7 @@ def extract_video_info(html_content):
     return video_info_list
 
 # Read the HTML content from the saved .html file
-html_file_path = "/Users/fernandagonzalez/Desktop/tiktok.html"
+html_file_path = "/Users/fernandagonzalez/Desktop/school/CS 315/Project #1/CS315_Project1/test_scrape/tiktok.html"
 with open(html_file_path, "r", encoding="utf-8") as file:
     html_content = file.read()
 
@@ -63,5 +63,5 @@ videos = extract_video_info(html_content)
 df = pd.DataFrame(videos, columns=['videoID', 'creator', 'likes', 'comments', 'favorites', 'shares', 'hashtags'])
 
 # Save DataFrame to CSV
-csv_output_path = "/Users/fernandagonzalez/Desktop/tiktok_data.csv"
+csv_output_path = "tiktok_data.csv"
 df.to_csv(csv_output_path, index=False)
