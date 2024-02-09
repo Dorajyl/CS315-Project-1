@@ -38,30 +38,26 @@ def extract_video_info(html_content):
         video_info['favorites'] = extract_content(stats_container.find('strong', {'data-e2e': 'undefined-count'}))
         video_info['shares'] = extract_content(stats_container.find('strong', {'data-e2e': 'share-count'}))
 
-        # # Extracting video description
-        # description_container = video_container.find('div', {'data-e2e': 'video-desc'})
-        # if description_container:
-        #     video_info['video_description'] = description_container.text.strip()
-
         # Extracting hashtags
         hashtags_container = video_container.find_all('a', {'data-e2e': 'search-common-link'})
         video_info['hashtags'] = [tag.text for tag in hashtags_container]
+
+        # Removing hashtags that we no longer want
+        
 
         video_info_list.append(video_info)
 
     return video_info_list
 
 # Read the HTML content from the saved .html file
-html_file_path = "/Users/fernandagonzalez/Desktop/school/CS 315/Project #1/CS315_Project1/test_scrape/tiktok.html"
+html_file_path = "data_analysis/sample_data/tiktok.html"
 with open(html_file_path, "r", encoding="utf-8") as file:
     html_content = file.read()
 
-# Extract video information
-videos = extract_video_info(html_content)
-
-# Create a DataFrame
-df = pd.DataFrame(videos, columns=['videoID', 'creator', 'likes', 'comments', 'favorites', 'shares', 'hashtags'])
+# Extract video information and create a DataFrame
+df = pd.DataFrame(extract_video_info(html_content), columns=['videoID', 'creator', 'likes', 
+                                                             'comments', 'favorites', 'shares', 
+                                                             'hashtags'])
 
 # Save DataFrame to CSV
-csv_output_path = "tiktok_data.csv"
-df.to_csv(csv_output_path, index=False)
+df.to_csv("data_analysis/scraped_data.csv", index=False)
