@@ -17,6 +17,10 @@ import os.path
 1 batch = the number of posts available on page before scrolling down and loading more.
 """
 
+"""
+1 batch = the number of posts available on page before scrolling down and loading more.
+"""
+
 class PageTiktok(BaseCase): #inherit BaseCase
     predefined_hashtag_list = ["viral","foryou"]
     chromebrowser = Driver(uc=True)
@@ -51,7 +55,12 @@ class PageTiktok(BaseCase): #inherit BaseCase
         try:
             author_element = video.find_element(By.XPATH, ".//*[@class='css-1k5oywg-H3AuthorTitle emt6k1z0']")
             return author_element.text if author_element else None
-        except NoSuchElementException:
+        except NoSuchElementException as nsee:
+            print(nsee)
+            print("Author element not found.")
+            return None
+        except StaleElementReferenceException as sere:
+            print(sere)
             print("Author element not found.")
             return None
 
@@ -75,6 +84,10 @@ class PageTiktok(BaseCase): #inherit BaseCase
                 return 0
 
         except (NoSuchElementException, ValueError):
+            print(f"Unable to retrieve the number of target:{target}")
+            return -1
+        except StaleElementReferenceException as sere:
+            print(sere)
             print(f"Unable to retrieve the number of target:{target}")
             return -1
 
@@ -136,21 +149,21 @@ class PageTiktok(BaseCase): #inherit BaseCase
         login = self.chromebrowser.find_element(By.XPATH, "/html/body/div[5]/div[3]/div/div/div/div[1]/div[2]/form/button")
         login.click()
     
-    def like_video(self, video):
-        """
-        returns if the video was successfully liked
-        """
-        like_successful = False
-        try:
-            like_button = video.find_elements(By.XPATH, ".//*[@class='css-1ok4pbl-ButtonActionItem e1hk3hf90']")[0]
-            self.chromebrowser.execute_script("arguments[0].click();", like_button)
-            like_successful = True
-            print(f"Clicked button {like_button.get_attribute('aria-label')} using JavaScript")
-            time.sleep(1)
-        except ElementClickInterceptedException:
-            print(f"ElementClickInterceptedException: Could not click the button")
-            pass
-        return like_successful
+#     def like_video(self, video):
+#         """
+#         returns if the video was successfully liked
+#         """
+#         like_successful = False
+#         try:
+#             like_button = video.find_elements(By.XPATH, ".//*[@class='css-1ok4pbl-ButtonActionItem e1hk3hf90']")[0]
+#             self.chromebrowser.execute_script("arguments[0].click();", like_button)
+#             like_successful = True
+#             print(f"Clicked button {like_button.get_attribute('aria-label')} using JavaScript")
+#             time.sleep(1)
+#         except ElementClickInterceptedException:
+#             print(f"ElementClickInterceptedException: Could not click the button")
+#             pass
+#         return like_successful
         
     def save_video(self, video):
         """
@@ -159,7 +172,8 @@ class PageTiktok(BaseCase): #inherit BaseCase
         save_successful = False
         try:
             #css-1ok4pbl-ButtonActionItem e1hk3hf90
-            save_button = video.find_elements(By.XPATH, ".//*[@class='css-1ok4pbl-ButtonActionItem']")[2]
+            save_button = video.find_elements(By.XPATH, ".//*[@class='css-1ok4pbl-ButtonActionItem e1hk3hf90']")[2]
+            # save_button = video.find_element(By.XPATH,"/html/body/div[1]/div[2]/div[2]/div[1]/div[1]/div/div[2]/div[2]/button[3]")
             self.chromebrowser.execute_script("arguments[0].click();", save_button)
             save_successful = True
             print(f"Clicked button {save_button.get_attribute('aria-label')} using JavaScript")
@@ -168,6 +182,7 @@ class PageTiktok(BaseCase): #inherit BaseCase
             print(f"ElementClickInterceptedException: Could not click the button")
             pass
         return save_successful
+    
     def flip(self, prob):
         """
         Return True with probability prob, and False otherwise
@@ -180,76 +195,73 @@ class PageTiktok(BaseCase): #inherit BaseCase
         """
         return np.random.random() < prob
 
-    def like_videos_random(self,current_batch):
-        """
-        returns if the video was successfully liked
-        """
-        num_of_posts_clicked = 0
-        video_liked = []
+#     def like_videos_random(self,current_batch):
+#         """
+#         returns if the video was successfully liked
+#         """
+#         num_of_posts_clicked = 0
+#         video_liked = []
 
-        current_batch_info = self.info_videos(current_batch)
-        for video_info in current_batch_info:
-            if self.flip(0.5):
-                time.sleep(0.5)
-                if self.like_video(video_info['video']):
-                    video_liked.append(video_info)
-                    num_of_posts_clicked += 1
+#         current_batch_info = self.info_videos(current_batch)
+#         for video_info in current_batch_info:
+#             if self.flip(0.5):
+#                 time.sleep(0.5)
+#                 if self.like_video(video_info['video']):
+#                     video_liked.append(video_info)
+#                     num_of_posts_clicked += 1
         
-        print(f"\nThere are #{len(current_batch_info)} videos \n and #{num_of_posts_clicked} posts were randomly liked successfully")
-        return video_liked
+#         print(f"\nThere are #{len(current_batch_info)} videos \n and #{num_of_posts_clicked} posts were randomly liked successfully")
+#         return video_liked
         
-     def save_videos_random(self,current,batch):
+    def save_videos_random(self,current_batch):
         '''Returns boolean indicating whether the video was successfully saved'''
         num_of_posts_clicked = 0
         video_saved = []
         current_batch_info = self.info_videos(current_batch)
         for video_info in current_batch_info:
-            if self.flip(0.5)
+            if self.flip(0.5):
                 time.sleep(0.5)
                 if self.save_video(video_info['video']):
                     video_saved.append(video_info)
                     num_of_posts_clicked +=1
-        print(f"\nThere are #{len(current_batch_info)} videos \n and #{num_of_posts_clicked} 
-        posts were randomly saved successfully")
+        print(f"\nThere are #{len(current_batch_info)} videos \n and #{num_of_posts_clicked} posts were randomly saved successfully")
         return video_saved
          
-    def like_videos_with_hashtag(self,current_batch,predefined_hashtag_list):
-        """
-        in each video in current_batch, like it iff it contains a hashtag in the predefined hashtag list
-        """
-        num_of_posts_with_hashtag = 0
-        video_liked = []
-        num_of_posts_clicked = 0
-        current_batch_info = self.info_videos(current_batch)
-        for video_info in current_batch_info:
-            if video_info["hashtag"]:
-                if set(video_info["hashtag"]) & set(predefined_hashtag_list):
-                    num_of_posts_with_hashtag += 1
-                    if self.like_video(video_info["video"]): #if video was successfully liked
-                        video_liked.append(video_info)
-                        num_of_posts_clicked += 1
-        print(f"\nThere are #{num_of_posts_with_hashtag} videos with predefined hashtags \n and #{num_of_posts_clicked} posts were liked successfully")
-        return video_liked
+    # def like_videos_with_hashtag(self,current_batch,predefined_hashtag_list):
+    #     """
+    #     in each video in current_batch, like it iff it contains a hashtag in the predefined hashtag list
+    #     """
+    #     num_of_posts_with_hashtag = 0
+    #     video_liked = []
+    #     num_of_posts_clicked = 0
+    #     current_batch_info = self.info_videos(current_batch)
+    #     for video_info in current_batch_info:
+    #         if video_info["hashtag"]:
+    #             if set(video_info["hashtag"]) & set(predefined_hashtag_list):
+    #                 num_of_posts_with_hashtag += 1
+    #                 if self.like_video(video_info["video"]): #if video was successfully liked
+    #                     video_liked.append(video_info)
+    #                     num_of_posts_clicked += 1
+    #     print(f"\nThere are #{num_of_posts_with_hashtag} videos with predefined hashtags \n and #{num_of_posts_clicked} posts were liked successfully")
+    #     return video_liked
         
     def save_videos_with_hashtag(self,current_batch,predefined_hashtag_list):
         """
         in each video in current_batch, save the video iff it contains a hashtag in the predefined hashtag list
         """
         num_of_posts_with_hashtag = 0
-        video_liked = []
+        video_saved = []
         num_of_posts_clicked = 0
         current_batch_info = self.info_videos(current_batch)
         for video_info in current_batch_info:
             if video_info["hashtag"]:
                 if set(video_info["hashtag"]) & set(predefined_hashtag_list):
                     num_of_posts_with_hashtag += 1
-                    if self.save_video(video_info["video"]): #if video was successfully liked
+                    if self.save_video(video_info["video"]): #if video was successfully saved
                         video_saved.append(video_info)
                         num_of_posts_clicked += 1
-        print(f"\nThere are #{num_of_posts_with_hashtag} videos with predefined hashtags \n 
-        and #{num_of_posts_clicked} posts were liked successfully")
+        print(f"\nThere are #{num_of_posts_with_hashtag} videos with predefined hashtags \n and #{num_of_posts_clicked} posts were saved successfully")
         return video_saved
-
 
 
 
@@ -293,22 +305,22 @@ class PageTiktok(BaseCase): #inherit BaseCase
         return (not (set(oldbatch) & set(newbatch)))
     
 
-    def iterate_through_batches_like_by_hashtag(self, num_batches = 5):
-        """
-        Like posts in current batch after updating, then move on to the next batch
-        """
-        self.batch_num = 0
-        while num_batches > 0:  # if new batch appeared on foryou page
-            print(f"\n****ENTERING BATCH{6-num_batches}\n")
-            num_batches -= 1
-            self.batch_num += 1
-            liked_videos = self.like_videos_with_hashtag(self.current_batch, self.predefined_hashtag_list)
-            time.sleep(5)
-            current_batch_info = self.info_videos(self.current_batch)
+#     def iterate_through_batches_like_by_hashtag(self, num_batches = 5):
+#         """
+#         Like posts in current batch after updating, then move on to the next batch
+#         """
+#         self.batch_num = 0
+#         while num_batches > 0:  # if new batch appeared on foryou page
+#             print(f"\n****ENTERING BATCH{6-num_batches}\n")
+#             num_batches -= 1
+#             self.batch_num += 1
+#             liked_videos = self.like_videos_with_hashtag(self.current_batch, self.predefined_hashtag_list)
+#             time.sleep(5)
+#             current_batch_info = self.info_videos(self.current_batch)
 
-            self.write_to_csv(current_batch_info, "like_by_hashtag_data_all_videos.csv")  # all videos on page 
-            self.write_to_csv(liked_videos, "like_by_hashtag_data_liked_videos.csv") #only the ones that were liked by hashtag
-            self.update_batch()
+#             self.write_to_csv(current_batch_info, "like_by_hashtag_data_all_videos.csv")  # all videos on page 
+#             self.write_to_csv(liked_videos, "like_by_hashtag_data_liked_videos.csv") #only the ones that were liked by hashtag
+#             self.update_batch()
             
     def iterate_through_batches_save_by_hashtag(self, num_batches = 5):
         """
@@ -327,24 +339,24 @@ class PageTiktok(BaseCase): #inherit BaseCase
             self.write_to_csv(saved_videos, "save_by_hashtag_data_saved_videos.csv") #only the ones that were saved by hashtag
             self.update_batch()
         
-    def iterate_through_batches_like_random(self, batches=5):
-        """
-        Like posts in current batch after updating randomly, then move on to the next batch
-        """
-        self.batch_num = 0
-        while batches > 0:
-            print(f"\n****BATCH #{6-batches}\n")
-            batches -= 1
-            self.batch_num += 1
-            current_batch_info = self.info_videos(self.current_batch)
-            liked_videos = self.like_videos_random(self.current_batch)
-            time.sleep(5)
+#     def iterate_through_batches_like_random(self, batches=5):
+#         """
+#         Like posts in current batch after updating randomly, then move on to the next batch
+#         """
+#         self.batch_num = 0
+#         while batches > 0:
+#             print(f"\n****BATCH #{6-batches}\n")
+#             batches -= 1
+#             self.batch_num += 1
+#             current_batch_info = self.info_videos(self.current_batch)
+#             liked_videos = self.like_videos_random(self.current_batch)
+#             time.sleep(5)
 
-            # Uncomment this if want data from random liking
-            current_batch_info = self.info_videos(self.current_batch)
-            self.write_to_csv(current_batch_info, "like_by_random_data_all_videos.csv")
-            self.write_to_csv(liked_videos, "like_by_random_data_liked_videos.csv")
-            self.update_batch()
+#             # Uncomment this if want data from random liking
+#             current_batch_info = self.info_videos(self.current_batch)
+#             self.write_to_csv(current_batch_info, "like_by_random_data_all_videos.csv")
+#             self.write_to_csv(liked_videos, "like_by_random_data_liked_videos.csv")
+#             self.update_batch()
             
     def iterate_through_batches_save_random(self, batches=5):
         """
@@ -362,7 +374,7 @@ class PageTiktok(BaseCase): #inherit BaseCase
             # Uncomment this if want data from random saving
             current_batch_info = self.info_videos(self.current_batch)
             self.write_to_csv(current_batch_info, "save_by_random_data_all_videos.csv")
-            self.write_to_csv(saved_videos, "save_by_random_data_liked_videos.csv")
+            self.write_to_csv(saved_videos, "save_by_random_data_saved_videos.csv")
             self.update_batch()
             
     def write_to_csv(self, data, filename):
@@ -393,10 +405,3 @@ class PageTiktok(BaseCase): #inherit BaseCase
                     'shares': video_info['shares'],
                     'saves': video_info['saves']
                 })
-  
-    
-
-
-
-
-        
