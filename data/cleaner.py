@@ -4,7 +4,7 @@ Data cleaner for CS 315 raw data.
 Goes through all files in raw data folder and does the following in order:
     1. Creates dataframe for file and sets necessary columns ("user" and "saved")
     2. Concatenates the files together into one master dataframe
-    3. Creates "batchID" column which is string concatenation of "user, "run", "batch", "index"
+    3. Creates "batchID" column which is string concatenation of "user", "run", "batch", "index"
     4. Orders columns and saves to CSV
 
 Description of columns:
