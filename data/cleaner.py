@@ -4,7 +4,7 @@ Data cleaner for CS 315 raw data.
 Goes through all files in raw data folder and does the following in order:
     1. Creates dataframe for file and sets necessary columns ("user" and "saved")
     2. Concatenates the files together into one master dataframe
-    3. Creates "batchID" column which is string concatenation of "user, "run", "batch", "index"
+    3. Creates "batchID" column which is string concatenation of "user", "run", "batch", "index"
     4. Orders columns and saves to CSV
 
 Description of columns:
@@ -40,6 +40,21 @@ for file in raw_data:
     df["user"] = str(file)[-12:-4]
     df["saved"] = "saved" in str(file)
 
+    # Updating pre-set column "run"
+    value = 0
+    for i, row in df.iterrows():
+        if row["batch"] == 1 and row["index"] == 0:
+            value += 1
+        df.at[i,"run"] = value
+
+    # Making values into ints for concatenation
+    ints = ["batch", "run", "index", "likes", "comments", "shares", "saves"]
+    df[ints] = df[ints].astype(int)
+
+    # Creating "batchID" column which is string concatenation of "user, "run", "batch", "index"
+    df["batchID"] = df[["user", "run", "batch", "index"]].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
+
+
     master.append(df)
 
 # Concatenating the files together into master dataframe
@@ -49,20 +64,6 @@ df = pd.concat(master, axis=0, ignore_index=True)
 
 # Splitting hashtag string value into list
 df["hashtags"] = df["hashtag"].str.split(", ")
-
-# Updating pre-set column "run"
-value = 0
-for i, row in df.iterrows():
-    if row["batch"] == 1 and row["index"] == 0:
-        value += 1
-    df.at[i,"run"] = value
-
-# Making values into ints for concatenation
-ints = ["batch", "run", "index", "likes", "comments", "shares", "saves"]
-df[ints] = df[ints].astype(int)
-
-# Creating "batchID" column which is string concatenation of "user, "run", "batch", "index"
-df["batchID"] = df[["user", "run", "batch", "index"]].apply(lambda row: '_'.join(row.values.astype(str)), axis=1)
 
 # Ordering column names
 df = df[["batchID", "run", "batch", "index", "saved", "author", "likes", "comments", 
