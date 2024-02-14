@@ -41,11 +41,14 @@ for file in raw_data:
     df["saved"] = "saved" in str(file)
 
     # Updating pre-set column "run"
-    value = 0
+    run = 0  # Initialize run to 0
+    previous_batch = None
+
     for i, row in df.iterrows():
-        if row["batch"] == 1 and row["index"] == 0:
-            value += 1
-        df.at[i,"run"] = value
+        if row["batch"] != previous_batch or row["index"] == 0:
+            run += 1
+        df.at[i, "run"] = run
+        previous_batch = row["batch"]
 
     # Making values into ints for concatenation
     ints = ["batch", "run", "index", "likes", "comments", "shares", "saves"]
