@@ -102,6 +102,10 @@ class PageTiktok(BaseCase): #inherit BaseCase
         except NoSuchElementException:
             print("Hashtag element not found.")
             return []
+        except StaleElementReferenceException as sere:
+            print(sere)
+            print("Hashtag element not found.")
+            return []
         
     def get_music(self, video):
         try:
@@ -113,7 +117,11 @@ class PageTiktok(BaseCase): #inherit BaseCase
             else:
                 return None
         except (NoSuchElementException, ValueError):
-            print("Unable to retrieve the number of likes")
+            print("Unable to retrieve music")
+            return -1
+        except StaleElementReferenceException as sere:
+            print(sere)
+            print("Unable to retrieve music")
             return -1
 
     def fetch_tiktok(self):
