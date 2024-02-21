@@ -5,6 +5,8 @@ By: Edith Po, Dora Li, Fernanda Gonzalez, Fridah Ntika, Lucia Gurrieri, and Sazm
 
 *Originally written by: ```https://github.com/mlsmzk/tiktok-like-experiment ```
 
+Our group made changes to the page_objects/PageTiktok.py file to include functions that save rather than like videos. Our code to analyze the data is in the data_analysis folder, along with our visualizations.
+
 ##### The TikTok audit code is in the PageTiktok.py file in the page_objects folder. chrome_audit has not been updated.
 
 ## How to Run the Code
